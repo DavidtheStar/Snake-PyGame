@@ -17,6 +17,13 @@ green = (188, 227, 199)
 #Fonts for Game
 score_font = pygame.font.SysFont("arialblack", 20)
 exit_font = pygame.font.Font("freesansbold.ttf", 30)
+msg_font = pygame.font.SysFont("arialblack", 20)
+
+def message(msg, txt_colour, bkgd_colour):
+    txt = msg_font.render(msg, True, txt_colour, bkgd_colour)
+
+    text_box = txt.get_rect(center=(500, 360))
+    screen.blit(txt, text_box)
 
 clock = pygame.time.Clock()#sets speed of snake movement
 
@@ -49,7 +56,7 @@ while not quit_game:
                 snake_y_change = 20
     if snake_x >= 1000 or snake_x < 0 or snake_y >= 720 or snake_y <0:
         quit_game = True
-
+        
     snake_x += snake_x_change
     snake_y += snake_y_change
 
@@ -62,6 +69,9 @@ while not quit_game:
     pygame.display.update()
 
     clock.tick(5)#sets FPS
+message("You Died Bozo!", black, white)
+pygame.display.update()
+time.sleep(3)
 
 pygame.quit()
 quit()
