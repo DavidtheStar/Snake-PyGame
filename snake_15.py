@@ -1,3 +1,5 @@
+"""Final copy, same as copy 14 except no print statements + when snake cant
+go down when going up (doesn't crash)/ can't reverse direction"""
 import pygame
 import time
 import random
@@ -31,13 +33,43 @@ def message(msg, txt_colour, bkgd_colour):
 
 clock = pygame.time.Clock()#sets speed of snake movement
 
+#function for highscore
+def load_high_score():
+    try:
+        hi_score_file = open("HI_score.txt", 'r')
+    except IOError:
+        hi_score_file = open("HI_score.txt", 'w')
+        hi_score_file.write("0")
+    hi_score_file = open("HI_score.txt", 'r')
+    value = hi_score_file.read()
+    hi_score_file.close()
+    return value
+
+#function to update record of highest score
+def update_high_score(score, high_score):
+    if int(score) > int(high_score):
+        return score
+    else:
+        return high_score
+
+#function save updated highscore
+def save_high_score(high_score):
+    high_score_file = open("HI_score.txt", 'w')
+    high_score_file.write(str(high_score))
+    high_score_file.close()
+
+
 #Display player score
-def player_score(score, score_colour):
+def player_score(score, score_colour, hi_score):
     display_score = score_font.render(f"Score: {score}", True, score_colour)
     screen.blit(display_score, (900,20)) #coords for top right
 
+    #high score
+    display_score = score_font.render(f"High Score: {hi_score}", True, score_colour)
+    screen.blit(display_score, (10,10)) #Coords for top left
+
 def draw_snake(snake_list):
-    print(f"Snake list: {snake_list}")
+    # print(f"Snake list: {snake_list}")
     for i in snake_list:
         pygame.draw.rect(screen, dark_green, [i[0], i[1], 20, 20])
 
@@ -58,9 +90,13 @@ def game_loop():
     food_x = round(random.randrange(20, 1000 - 20) / 20) * 20
     food_y = round(random.randrange(20, 720 - 20) / 20) * 20
 
+    #Loads high score
+    high_score = load_high_score()
+    # print(f"high_score test: {high_score}") #TEST
 
     while not quit_game:
         while game_over:
+            save_high_score(high_score)
             screen.fill(white)
             message("You lost Bozo! Press 'Q' to Quit or 'A' to play Again",
                     black, white)
@@ -99,18 +135,23 @@ def game_loop():
 
 
             if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
+                # Prevent reversing direction (AI helped with this part)
+                if event.key == pygame.K_LEFT and snake_x_change != 20:
                     snake_x_change = -20
                     snake_y_change = 0
-                elif event.key == pygame.K_RIGHT:
+
+                elif event.key == pygame.K_RIGHT and snake_x_change != -20:
                     snake_x_change = 20
                     snake_y_change = 0
-                elif event.key == pygame.K_UP:
+
+                elif event.key == pygame.K_UP and snake_y_change != 20:
                     snake_x_change = 0
                     snake_y_change = -20
-                elif event.key == pygame.K_DOWN:
+
+                elif event.key == pygame.K_DOWN and snake_y_change != -20:
                     snake_x_change = 0
                     snake_y_change = 20
+
         if snake_x >= 1000 or snake_x < 0 or snake_y >= 720 or snake_y <0:
             game_over = True
 
@@ -132,8 +173,16 @@ def game_loop():
 
         #keeping score
         score = snake_length - 1
-        player_score(score, black)
+        player_score(score, black, high_score)
 
+        #get high score
+        high_score = update_high_score(score, high_score)
+
+        #link speed of snake to player score to increase difficulty
+        if score > 3:
+            speed = score
+        else:
+            speed = 3
         #Create circle for Food
         food = pygame.Rect(food_x, food_y, 20,20)
         apple = pygame.image.load('apple_3.png').convert_alpha()
@@ -142,23 +191,16 @@ def game_loop():
 
         pygame.display.update()
 
-        #print lines for testing
-        print(f"Snake x: {snake_x}")
-        print(f"Food x: {food_x}")
-        print(f"Snake y: {snake_y}")
-        print(f"Food y: {food_y}")
-        print("\n\n")
-
         #Collision detection (test snake touch food)
         if snake_x == food_x and snake_y == food_y:
             #set new position for food when touched
             food_x = round(random.randrange(20,1000 - 20) / 20) * 20
             food_y = round(random.randrange(20,720 - 20) / 20) * 20
-            print("Got it!")
+            # print("Got it!") #dont want any printing
             #increase snake length
             snake_length += 1
 
-        clock.tick(5)#sets FPS
+        clock.tick(speed)#sets FPS
 
 
     pygame.quit()

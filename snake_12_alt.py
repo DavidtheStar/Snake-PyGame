@@ -42,7 +42,7 @@ def draw_snake(snake_list):
         pygame.draw.rect(screen, dark_green, [i[0], i[1], 20, 20])
 
 def game_loop():
-
+    start_time = time.time() # to record score (time) from start
     quit_game = False
     game_over = False
     snake_x = 480 #Centre point horizontally is (1000-20 snake Width)/2 = 480
@@ -131,9 +131,15 @@ def game_loop():
         draw_snake(snake_list)
 
         #keeping score
-        score = snake_length - 1
+        score = round(time.time() - start_time)
         player_score(score, black)
 
+
+        #link speed of snake to player score to increase difficulty
+        if score > 3:
+            speed = score
+        else:
+            speed = 3
         #Create circle for Food
         food = pygame.Rect(food_x, food_y, 20,20)
         apple = pygame.image.load('apple_3.png').convert_alpha()
@@ -158,7 +164,7 @@ def game_loop():
             #increase snake length
             snake_length += 1
 
-        clock.tick(5)#sets FPS
+        clock.tick(speed)#sets FPS
 
 
     pygame.quit()
